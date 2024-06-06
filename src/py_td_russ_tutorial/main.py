@@ -1,9 +1,12 @@
 """Main module for Tower Defense utilizing pygame-ce."""
 
+import json
+
 import pygame as pg
 
 import constants as c
 from enemy import Enemy
+from world import World
 
 
 # Initialize Pygame.
@@ -17,19 +20,23 @@ screen = pg.display.set_mode((c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defense")
 
 # Load images.
+# Map.
+map = pg.image.load('levels/level.png').convert_alpha()
+# Enemies.
 enemy_image = pg.image.load('assets/images/enemies/enemy_1.png').convert_alpha()
+
+# Load json data for level.
+with open('levels/level.tmj') as file:
+    world_data = json.load(file)
+
+# Create world.
+world = World(world_data, map_image=map)
+world.process_data()
 
 # Create groups.
 enemy_group = pg.sprite.Group()
 
-waypoints = [
-    (100, 100),
-    (400, 200),
-    (400, 100),
-    (200, 300)
-]
-
-enemy = Enemy(waypoints, enemy_image)
+enemy = Enemy(world.waypoints, enemy_image)
 enemy_group.add(enemy)
 
 # Game loop.
@@ -40,10 +47,13 @@ while run:
 
     screen.fill("grey100")
 
+    # Draw level.
+    world.draw(screen)
+
     # Draw enemy path.
-    pg.draw.lines(screen, "grey0",
-                  closed=False,
-                  points=waypoints)
+    # pg.draw.lines(screen, "grey0",
+    #               closed=False,
+    #               points=world.waypoints)
 
     # Update groups.
     enemy_group.update()
