@@ -1,6 +1,7 @@
 """Main module for Tower Defense utilizing pygame-ce."""
 
 import json
+from pathlib import Path
 
 import pygame as pg
 
@@ -21,12 +22,15 @@ screen = pg.display.set_mode((c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defense")
 
 # Load images.
+assets_images = Path('assets/images')
 # Map.
 map = pg.image.load('levels/level.png').convert_alpha()
 # Individual turret for mouse cursor.
-cursor_turret = pg.image.load('assets/images/turrets/cursor_turret.png').convert_alpha()
+turrets = assets_images / 'turrets'
+cursor_turret = pg.image.load(turrets / 'cursor_turret.png').convert_alpha()
 # Enemies.
-enemy_image = pg.image.load('assets/images/enemies/enemy_1.png').convert_alpha()
+enemies = assets_images / 'enemies'
+enemy_image = pg.image.load(enemies / 'enemy_1.png').convert_alpha()
 
 # Load json data for level.
 with open('levels/level.tmj') as file:
