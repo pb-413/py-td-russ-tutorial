@@ -108,7 +108,8 @@ while run:
 
     # Draw groups.
     enemy_group.draw(screen)
-    turret_group.draw(screen)
+    for turret in turret_group:
+        turret.draw(screen)
 
     # Draw buttons.
     if turret_button.draw(screen):
