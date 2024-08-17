@@ -1,12 +1,17 @@
 import pygame as pg
+import math
 
 import constants as c
+from enemy import Enemy
 
 class Turret(pg.sprite.Sprite):
     def __init__(self, sprite_sheet: pg.Surface, tile_x, tile_y):
         pg.sprite.Sprite.__init__(self)
+        self.range = 90
         self.cooldown = 1500
         self.last_shot = pg.time.get_ticks()
+        self.selected = False
+        self.target = None
 
         # Position variables.
         self.tile_x = tile_x
@@ -23,9 +28,26 @@ class Turret(pg.sprite.Sprite):
         self.update_time = pg.time.get_ticks()
 
         # Update image.
-        self.image = self.animation_list[self.frame_index]
+        self.angle = 90
+        self.original_image = self.animation_list[self.frame_index]
+        self.image = pg.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect()
         self.rect.center = (self.x, self.y)
+
+        # Create transparent circle showing range.
+        diameter = self.range * 2
+        self.range_image = pg.Surface((diameter, diameter))
+        black = (0, 0, 0)
+        self.range_image.fill(black)          # Fill with black.
+        self.range_image.set_colorkey(black)  # Make black transparent.
+        pg.draw.circle(
+            self.range_image,
+            color = 'grey100',
+            center = (self.range, self.range),
+            radius=self.range)
+        self.range_image.set_alpha(100)  # 0-225, transparent-opaque.
+        self.range_rect = self.range_image.get_rect()
+        self.range_rect.center = self.rect.center
 
     def load_images(self) -> list[pg.Surface]:
         # Extract images from sprite sheet.
@@ -57,14 +79,32 @@ class Turret(pg.sprite.Sprite):
         assert isinstance(animation_list[1], pg.Surface)
         return animation_list
 
-    def update(self):
-        # Search for new target once turret has cooled down.
-        if pg.time.get_ticks() - self.last_shot > self.cooldown:
+    def update(self, enemy_group: list[Enemy]):
+        # If target picked, play firing animation.
+        if self.target:
             self.play_animation()
+        else:
+            # Search for new target once turret has cooled down.
+            if pg.time.get_ticks() - self.last_shot > self.cooldown:
+                self.pick_target(enemy_group)
+
+    def pick_target(self, enemy_group: list[Enemy]):
+        # Find an enemy to target.
+        x_dist = 0
+        y_dist = 0
+        # Check distance to enemy to see if it is in range.
+        for enemy in enemy_group:
+            x_dist = enemy.pos[0] - self.x
+            y_dist = enemy.pos[1] - self.y
+            dist = math.sqrt(x_dist ** 2 + y_dist ** 2)
+            if dist < self.range:
+                self.target = enemy
+                print("Target selected.")
+                self.angle = math.degrees(math.atan2(-y_dist, x_dist))
 
     def play_animation(self):
         # Update image.
-        self.image = self.animation_list[self.frame_index]
+        self.orignal_image = self.animation_list[self.frame_index]
         # Check if enough time has passed since last update.
         if pg.time.get_ticks() - self.update_time > c.ANIMATION_DELAY:
             self.update_time = pg.time.get_ticks()
@@ -75,3 +115,18 @@ class Turret(pg.sprite.Sprite):
                 # Record completed time and clear target so cooldown
                 # can begin.
                 self.last_shot = pg.time.get_ticks()
+                self.target = None
+
+    def draw(self, surface: pg.Surface):
+        """Draw me there!"""
+        self.image = pg.transform.rotate(self.original_image, self.angle - 90)
+        # Why subtract 90 here?
+        # "In the pygame coordinate system, to make the turret point up,
+        # we have to subtract 90 from this angle."
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
+        assert self.image
+        assert self.rect
+        surface.blit(self.image, self.rect)
+        if self.selected:
+            surface.blit(self.range_image, self.range_rect)
