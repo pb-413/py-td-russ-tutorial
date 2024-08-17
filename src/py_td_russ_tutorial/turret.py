@@ -93,4 +93,5 @@ class Turret(pg.sprite.Sprite):
                 self.last_shot = pg.time.get_ticks()
 
     def draw(self, surface):
+        surface.blit(self.image, self.rect)
         surface.blit(self.range_image, self.range_rect)
