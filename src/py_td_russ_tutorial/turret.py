@@ -78,10 +78,13 @@ class Turret(pg.sprite.Sprite):
         return animation_list
 
     def update(self, enemy_group):
-        # Search for new target once turret has cooled down.
-        if pg.time.get_ticks() - self.last_shot > self.cooldown:
+        # If target picked, play firing animation.
+        if self.target:
             self.play_animation()
-            self.pick_target(enemy_group)
+        else:
+            # Search for new target once turret has cooled down.
+            if pg.time.get_ticks() - self.last_shot > self.cooldown:
+                self.pick_target(enemy_group)
 
     def pick_target(self, enemy_group):
         # Find an enemy to target.
