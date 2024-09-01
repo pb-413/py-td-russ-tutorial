@@ -8,6 +8,7 @@ class Turret(pg.sprite.Sprite):
         self.range = 90
         self.cooldown = 1500
         self.last_shot = pg.time.get_ticks()
+        self.selected = False
 
         # Position variables.
         self.tile_x = tile_x
@@ -94,4 +95,5 @@ class Turret(pg.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-        surface.blit(self.range_image, self.range_rect)
+        if self.selected:
+            surface.blit(self.range_image, self.range_rect)
