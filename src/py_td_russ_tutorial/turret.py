@@ -1,3 +1,5 @@
+import math
+
 import pygame as pg
 
 import constants as c
@@ -9,6 +11,7 @@ class Turret(pg.sprite.Sprite):
         self.cooldown = 1500
         self.last_shot = pg.time.get_ticks()
         self.selected = False
+        self.target = None
 
         # Position variables.
         self.tile_x = tile_x
@@ -74,10 +77,24 @@ class Turret(pg.sprite.Sprite):
         assert isinstance(animation_list[1], pg.Surface)
         return animation_list
 
-    def update(self):
+    def update(self, enemy_group):
         # Search for new target once turret has cooled down.
         if pg.time.get_ticks() - self.last_shot > self.cooldown:
             self.play_animation()
+            self.pick_target(enemy_group)
+
+    def pick_target(self, enemy_group):
+        # Find an enemy to target.
+        x_dist = 0
+        y_dist = 0
+        # Check distance to each enemy to see if it is in range.
+        for enemy in enemy_group:
+            x_dist = enemy.pos[0] - self.x
+            y_dist = enemy.pos[1] - self.y
+            dist = math.sqrt(x_dist ** 2 + y_dist ** 2)
+            if dist < self.range:
+                self.target = enemy
+                print("Traget selected.")
 
     def play_animation(self):
         # Update image.
