@@ -112,6 +112,7 @@ class Turret(pg.sprite.Sprite):
                 # Record completed time and clear target so cooldown
                 # can begin.
                 self.last_shot = pg.time.get_ticks()
+                self.target = None
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
